@@ -2,90 +2,212 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
-    height: 100vh;
-    overflow: hidden;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f2f5;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .container {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
+    background-color: white;
+    padding: 0;
     width: 100%;
-    max-width: 1000px;
-    height: 100%;
-}
-
-.row {
-    display: flex;
-    width: 100%;
-    justify-content: center;
-}
-
-.key {
-    flex: 1;
-    height: 100px;
-    background: #ddd;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    user-select: none;
-    border: 1px solid #999;
+    height: 100vh;
+    max-width: none;
     margin: 0;
+    box-shadow: none;
 }
 
-.key.active {
-    background: #183c9f;
+h1 {
+    color: #1a73e8;
+    text-align: center;
+    margin: 0;
+    padding: 0.8rem;
+    background-color: #f8f9fa;
+    font-size: 1.5rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+}
+
+h2 {
+    color: #333;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.braille-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding-top: 3.3rem; /* Untuk kompensasi fixed header */
+}
+
+.braille-column {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    height: 100%;
+    background-color: #f0f2f5;
+}
+
+.braille-dot {
+    width: 100%;
+    height: 33.33%;
+    border-radius: 0;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    color: #1a73e8;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 0;
+    padding: 0;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.braille-dot:hover {
+    background-color: #e8f0fe;
+}
+
+.braille-dot.active {
+    background-color: #1a73e8;
     color: white;
 }
 
-#translated-text, #braille-dots {
-    margin-top: 20px;
-    text-align: center;
-    word-break: break-word;
-    padding: 0 10px;
+.translation-info {
+    background-color: white;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    height: 100%;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
 
-@media (max-width: 600px) {
-    .container {
-        padding: 10px;
+.info-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+}
+
+.braille-code, .translated-text {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    word-wrap: break-word;
+}
+
+.keyboard-guide {
+    margin-top: 1rem;
+    color: #666;
+    font-size: 0.9rem;
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+}
+
+#braille-dots, #translated-text {
+    font-weight: bold;
+    color: #1a73e8;
+    font-size: 1.2rem;
+    word-wrap: break-word;
+}
+
+/* Landscape mode untuk mobile */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .braille-grid {
+        grid-template-columns: 0.8fr 2fr 0.8fr;
     }
-    .key {
-        height: 60px;
-        margin: 1px;
+
+    .braille-dot {
+        font-size: 1.2rem;
+    }
+
+    h1 {
+        font-size: 1.2rem;
+        padding: 0.5rem;
+    }
+
+    .braille-grid {
+        padding-top: 2.2rem;
     }
 }
 
-@media (orientation: landscape) {
+/* Portrait mode untuk mobile */
+@media screen and (max-width: 768px) {
     .container {
+        height: 100vh;
+    }
+
+    .braille-grid {
+        grid-template-columns: 1fr;
+        height: calc(100vh - 3.3rem);
+        padding-top: 3.3rem;
+    }
+    
+    .braille-column {
         flex-direction: row;
-        justify-content: space-between;
-        width: 100%;
+        height: 80px;
+    }
+    
+    .braille-dot {
         height: 100%;
+        width: 33.33%;
+        font-size: 1.2rem;
     }
-    .column {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        width: 30%;
-        height: 100%;
+    
+    .translation-info {
+        padding: 1rem;
+        flex: 1;
+        overflow-y: auto;
     }
-    .key {
-        height: calc(33.33% - 2px);
-        width: 100%;
+
+    .info-content {
+        gap: 0.8rem;
     }
-    .text-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        width: 40%;
-        padding: 10px;
+
+    .braille-code, .translated-text {
+        padding: 0.8rem;
+    }
+
+    #braille-dots, #translated-text {
+        font-size: 1.1rem;
+    }
+}
+
+/* Small phones */
+@media screen and (max-width: 360px) {
+    h1 {
+        font-size: 1.2rem;
+        padding: 0.6rem;
+    }
+
+    .braille-grid {
+        padding-top: 2.8rem;
+    }
+
+    .braille-column {
+        height: 60px;
+    }
+
+    .braille-dot {
+        font-size: 1rem;
     }
 }

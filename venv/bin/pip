@@ -1,4 +1,4 @@
-#!/home/titikkoma/Documents/um/tangan/braille/venv/bin/python3
+#!/home/titikkoma/Downloads/braille/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

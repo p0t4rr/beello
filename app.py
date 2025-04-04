@@ -18,7 +18,7 @@ braille_dict = {
     '101111': 'Y', '101011': 'Z', '000000': ' '  # Space
 }
 
-input_delay = 0.5  # Jeda 0.5 detik antar input
+input_delay = 0.3  # Jeda 0.3 detik antar input
 last_input_time = 0
 
 @app.route('/')
@@ -29,16 +29,44 @@ def home():
 def serve_static(filename):
     return send_from_directory('static', filename)
 
+def text_to_speech(text, read_as_character=False):
+    # Jika membaca sebagai karakter, tambahkan spasi antar huruf
+    if read_as_character and len(text) == 1 and text.isalpha():
+        text = f"{text}"
+    
+    # Jika tidak membaca sebagai karakter, pastikan teks dibaca sebagai kalimat utuh
+    if not read_as_character:
+        text = ' '.join(text.split())  # Menghapus spasi berlebih untuk pembacaan kalimat
+    
+    tts = gTTS(text=text, lang='id', slow=False)
+    audio_buffer = BytesIO()
+    tts.write_to_fp(audio_buffer)
+    audio_buffer.seek(0)
+    return base64.b64encode(audio_buffer.read()).decode('utf-8')
+
 @app.route('/translate', methods=['POST'])
 def translate():
     global last_input_time
     current_time = time.time()
     
-    # Periksa jeda waktu
+    data = request.json
+    
+    # Jika ada teks yang akan dibaca (dari swipe)
+    if 'read_text' in data:
+        text_to_read = data['read_text'].strip()
+        if text_to_read:
+            # Ubah teks menjadi kalimat yang lebih natural
+            text_to_read = ' '.join(text_to_read.split())  # Menghapus spasi berlebih
+            audio_base64 = text_to_speech(text_to_read, read_as_character=False)
+            return jsonify({
+                'audio': audio_base64
+            })
+        return jsonify({'error': 'No text to read'}), 400
+    
+    # Periksa jeda waktu untuk input braille
     if current_time - last_input_time < input_delay:
         return jsonify({'error': 'Too fast, please wait'}), 429
     
-    data = request.json
     braille_input = data.get('braille')
     
     # Validasi format input
@@ -67,12 +95,8 @@ def translate():
     if not translated_text_str:
         return jsonify({'error': 'No valid translation'}), 400
 
-    # Convert translated text to speech
-    tts = gTTS(text=translated_text_str, lang='id')
-    audio_buffer = BytesIO()
-    tts.write_to_fp(audio_buffer)
-    audio_buffer.seek(0)
-    audio_base64 = base64.b64encode(audio_buffer.read()).decode('utf-8')
+    # Generate audio untuk setiap karakter yang diinput
+    audio_base64 = text_to_speech(translated_text_str, read_as_character=True)
 
     return jsonify({
         'translated_text': translated_text_str,
@@ -81,4 +105,4 @@ def translate():
     })
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
