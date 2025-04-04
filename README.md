@@ -2,6 +2,8 @@
 
 ## Overview
 This project is a Braille Translator web application built using Flask for the backend. The application allows users to input Braille patterns using a virtual keyboard and translates them into text and audio output. The audio output is generated using Google Text-to-Speech (gTTS).
+![image](https://github.com/user-attachments/assets/2b879e22-c4bf-4607-9776-ed0671891464)
+
 
 ## Features
 - Input Braille patterns using a virtual keyboard.
