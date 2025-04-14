@@ -15,10 +15,10 @@ braille_dict = {
     '101100': 'M', '101110': 'N', '101010': 'O', '111100': 'P',
     '111110': 'Q', '111010': 'R', '011100': 'S', '011110': 'T',
     '101001': 'U', '111001': 'V', '010111': 'W', '101101': 'X',
-    '101111': 'Y', '101011': 'Z', '000000': ' '  # Space
+    '101111': 'Y', '101011': 'Z', '000000': ' ' 
 }
 
-input_delay = 0.3  # Jeda 0.3 detik antar input
+input_delay = 0.1  
 last_input_time = 0
 
 @app.route('/')
@@ -30,13 +30,11 @@ def serve_static(filename):
     return send_from_directory('static', filename)
 
 def text_to_speech(text, read_as_character=False):
-    # Jika membaca sebagai karakter, tambahkan spasi antar huruf
     if read_as_character and len(text) == 1 and text.isalpha():
         text = f"{text}"
     
-    # Jika tidak membaca sebagai karakter, pastikan teks dibaca sebagai kalimat utuh
     if not read_as_character:
-        text = ' '.join(text.split())  # Menghapus spasi berlebih untuk pembacaan kalimat
+        text = ' '.join(text.split()) 
     
     tts = gTTS(text=text, lang='id', slow=False)
     audio_buffer = BytesIO()
@@ -51,36 +49,30 @@ def translate():
     
     data = request.json
     
-    # Jika ada teks yang akan dibaca (dari swipe)
     if 'read_text' in data:
         text_to_read = data['read_text'].strip()
         if text_to_read:
-            # Ubah teks menjadi kalimat yang lebih natural
             text_to_read = ' '.join(text_to_read.split())  # Menghapus spasi berlebih
             audio_base64 = text_to_speech(text_to_read, read_as_character=False)
             return jsonify({
                 'audio': audio_base64
             })
-        return jsonify({'error': 'No text to read'}), 400
+        return jsonify({'error': 'No text to read'}), 100
     
-    # Periksa jeda waktu untuk input braille
     if current_time - last_input_time < input_delay:
-        return jsonify({'error': 'Too fast, please wait'}), 429
+        return jsonify({'error': 'Too fast, please wait'}), 100
     
     braille_input = data.get('braille')
     
-    # Validasi format input
     if not isinstance(braille_input, list):
-        return jsonify({'error': 'Input must be a list'}), 400
+        return jsonify({'error': 'Input must be a list'}), 100
         
-    # Validasi setiap kode braille
     for code in braille_input:
         if not isinstance(code, str) or len(code) != 6 or not all(c in '01' for c in code):
             return jsonify({'error': 'Invalid braille code format'}), 400
         if code not in braille_dict:
             return jsonify({'error': f'Invalid braille pattern: {code}'}), 400
     
-    # Terjemahkan kode yang valid
     translated_text = []
     for code in braille_input:
         if code in braille_dict:
@@ -88,19 +80,18 @@ def translate():
     
     translated_text_str = ''.join(translated_text)
     
-    # Update waktu input terakhir
     last_input_time = current_time
     
-    # Jika tidak ada teks yang valid
-    if not translated_text_str:
-        return jsonify({'error': 'No valid translation'}), 400
+    combined_text = ''.join(translated_text)
 
-    # Generate audio untuk setiap karakter yang diinput
-    audio_base64 = text_to_speech(translated_text_str, read_as_character=True)
+    if not combined_text.strip():
+        return jsonify({'error': 'No text to translate'}), 400
+
+    audio_base64 = text_to_speech(combined_text, read_as_character=False)
 
     return jsonify({
-        'translated_text': translated_text_str,
-        'braille_code': braille_input[0],
+        'translated_text': combined_text,
+        'braille_code': braille_input,
         'audio': audio_base64
     })
 

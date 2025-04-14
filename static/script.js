@@ -206,12 +206,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Timer for detecting pause
+    let inputTimeout;
+
+    // Function to handle input with delay
+    function handleInputWithDelay() {
+        clearTimeout(inputTimeout);
+        inputTimeout = setTimeout(() => {
+            translateBraille();
+        }, 1500);
+    }
+
     // Event listener untuk tombol Braille
     document.querySelectorAll('.braille-dot').forEach(button => {
         button.addEventListener('click', function() {
             if (!isProcessing) {
                 const dotIndex = parseInt(this.getAttribute('data-value')) - 1;
                 toggleDot(this, dotIndex);
+                handleInputWithDelay();
             }
         });
     });
@@ -244,6 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const dotIndex = keyMap[key];
             const button = document.querySelector(`.braille-dot[data-value="${dotIndex + 1}"]`);
             toggleDot(button, dotIndex);
+            handleInputWithDelay();
             event.preventDefault();
         }
     });
